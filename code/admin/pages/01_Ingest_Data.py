@@ -9,6 +9,8 @@ import logging
 import requests
 from azure.storage.blob import BlobServiceClient, generate_blob_sas, ContentSettings
 import urllib.parse
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from utilities.helpers.ConfigHelper import ConfigHelper
 from dotenv import load_dotenv
 load_dotenv()
@@ -28,7 +30,8 @@ def remote_convert_files_and_add_embeddings(process_all=False):
     backend_url = urllib.parse.urljoin(os.getenv('BACKEND_URL','http://localhost:7071'), "/api/BatchStartProcessing")
     params = {}
     if os.getenv('FUNCTION_KEY') != None:
-        params['clientKey'] = os.getenv('FUNCTION_KEY')
+        params['code'] = os.getenv('FUNCTION_KEY')
+        params['clientId'] = "clientKey"
     if process_all:
         params['process_all'] = "true"
     try:
@@ -43,7 +46,8 @@ def remote_convert_files_and_add_embeddings(process_all=False):
 def add_urls():
     params = {}
     if os.getenv('FUNCTION_KEY') != None:
-        params['clientKey'] = os.getenv('FUNCTION_KEY')
+        params['code'] = os.getenv('FUNCTION_KEY')
+        params['clientId'] = "clientKey"
     urls = st.session_state['urls'].split('\n')
     for url in urls:
         body = {
@@ -82,7 +86,7 @@ try:
     with st.expander("Add documents in Batch", expanded=True):
         config = ConfigHelper.get_active_config_or_default()
         file_type = [processor.document_type for processor in config.document_processors]
-        uploaded_files = st.file_uploader("Upload a document to add it to the Azure Storage Account, compute embeddings and add them to the Azure Cognitive Search index. Check your configuration for available document processors.", type=file_type, accept_multiple_files=True)
+        uploaded_files = st.file_uploader("Upload a document to add it to the Azure Storage Account, compute embeddings and add them to the Azure AI Search index. Check your configuration for available document processors.", type=file_type, accept_multiple_files=True)
         if uploaded_files is not None:
             for up in uploaded_files:
                 # To read file as bytes:
