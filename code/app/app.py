@@ -3,6 +3,9 @@ import os
 import logging
 import requests
 import openai
+from azure.monitor.opentelemetry import configure_azure_monitor
+from azure.core.tracing.ext.opentelemetry_span import OpenTelemetrySpan
+from logging import getLogger, INFO
 
 # Fixing MIME types for static files under Windows
 import mimetypes
@@ -15,9 +18,15 @@ from dotenv import load_dotenv
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-load_dotenv(os.path.join(os.path.dirname(__file__), '..', '..', '.env')) # Load environment variables from .env file
+load_dotenv(os.path.join(os.path.dirname(__file__), '.env')) # Load environment variables from .env file
 
 app = Flask(__name__)
+
+configure_azure_monitor(
+    connection_string=os.getenv("APPINSIGHTS_CONNECTION_STRING")
+)
+
+logger = getLogger(__name__)
 
 @app.route("/", defaults={"path": "index.html"})
 @app.route("/<path:path>")
@@ -259,7 +268,7 @@ def conversation_azure_byod():
 def conversation_custom():
     from utilities.helpers.OrchestratorHelper import Orchestrator, OrchestrationSettings
     message_orchestrator = Orchestrator()
-    
+
     try:
         user_message = request.json["messages"][-1]['content']
         conversation_id = request.json["conversation_id"]

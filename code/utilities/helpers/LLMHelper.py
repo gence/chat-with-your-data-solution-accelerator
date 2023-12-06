@@ -28,7 +28,7 @@ class LLMHelper:
                                max_tokens=self.llm_max_tokens, openai_api_version=openai.api_version)
     
     def get_embedding_model(self):
-        return OpenAIEmbeddings(deployment=self.embedding_model, chunk_size=1)
+        return OpenAIEmbeddings(deployment=self.embedding_model, chunk_size=1, max_retries=10)
     
     def get_chat_completion_with_functions(self, messages: List[dict], functions: List[dict], function_call: str="auto"):
         return openai.ChatCompletion.create(
